@@ -1,2 +1,18 @@
 # google-as-template
 Base configuration for working with Google Apps Scripts for Google Docs trackers, etc
+
+---
+## Overview
+
+This repo is designed as a starting off point for projects that use Google
+Apps Scripts, primarily for access with Google Spreadsheets. It has few
+features:
+
+1. Yaml template defining the project
+2. Helper scripts to clone/push apps scripts locally for source control
+3. Integration with logging and pytest
+4. Standard API functions and AppsScripts designed for spreadsheet projects
+
+---
+
+## Getting started

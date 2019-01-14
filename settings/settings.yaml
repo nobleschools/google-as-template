@@ -1,0 +1,7 @@
+# Master settings file for repository
+# Will have a google_settings entry for google-as-template details
+
+
+google_settings:
+  project_dir: 'enter_the_key_for_project_folder_here'
+  script_name: 'Apps Scripts'
