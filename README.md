@@ -16,3 +16,9 @@ features:
 ---
 
 ## Getting started
+
+1. Go to the [Google Apps Script API Python Quickstart](https://developers.google.com/apps-script/api/quickstart/python)
+   and follow "Step 1" to create a new console project, enable the API and
+   receive credentials. Place the "credentials.json" file in this main
+   directory. Also, note the new project name for later.
+2. Stuff
