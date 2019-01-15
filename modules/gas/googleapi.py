@@ -27,6 +27,7 @@ def get_credentials(cfg):
         secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
         flow = client.flow_from_clientsecrets(secret_path, cfg['scopes'])
         flow.user_agent = cfg['project_name']
-        credentials = tools.run_flow(flow, store)
+        flags = tools.argparser.parse_args([])
+        credentials = tools.run_flow(flow, store, flags)
         print('Storing credentials to ' + credential_path)
     return credentials

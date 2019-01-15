@@ -5,11 +5,12 @@ Management function for a set of tools designed to work with Google Apps
 Script API and Google Sheets
 """
 
+import os
 import sys
 import yaml
 from modules.gas import googleapi
 
-SETTINGS = 'settings/settings.yaml'
+SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
 
 
 def create_project(cfg):
@@ -17,9 +18,8 @@ def create_project(cfg):
     Runs an authentication flow and then pushes an initial Apps Script file
     to the Google Drive folder specified in the Yaml file
     """
-    print(cfg)
-    credentials = googleapi.get_credentials(cfg)
-    print(credentials)
+    creds = googleapi.get_credentials(cfg)
+    print(creds)
 
 
 def pull_scripts(cfg):
