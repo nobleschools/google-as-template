@@ -1,8 +1,8 @@
 # Master settings file for repository
-# Will have a google_settings entry for google-as-template details
 
 
-google_settings:
+# This entry for google-as-template details
+google_settings:  # First three lines are based on your project
   # project_dir: 'enter_the_key_for_project_folder_here'
   project_dir: '1HWMeTZ_Mv2GA7Ldl7onAutpuYKyzrkn7'
   # project_name: 'Enter the name of your project here'
@@ -14,5 +14,12 @@ google_settings:
   credentials_store: 'credentials_store.json'
   scopes:  # If these are changed, repeat flow by rm'ing credentials_store.json
     - 'https://www.googleapis.com/auth/drive'
+    - 'https://www.googleapis.com/auth/script.projects'
     - 'https://spreadsheets.google.com/feeds'
     - 'https://www.googleapis.com/auth/spreadsheets'
+  service_versions:
+    script: 'v1'
+    drive: 'v3'
+  refresh_ttl: 365  # seconds tokens are invalid prior to expiration
+
+# Other entries for the specific repository are possible here

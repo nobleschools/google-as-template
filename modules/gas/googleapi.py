@@ -2,6 +2,8 @@
 
 """Functions for working with the Google API"""
 import os
+import httplib2
+from apiclient import discovery
 from oauth2client import tools
 from oauth2client import client
 from oauth2client.file import Storage
@@ -15,6 +17,7 @@ def get_credentials(cfg):
     the OAuth2 flow is completed to obtain the new credentials.
 
     Assumes store_file is/will be and secret_file is in store_dir
+    These and other constants passed via cfg dict from a startup yaml file
 
     Returns:
         credentials, the obtained credential.
@@ -29,5 +32,29 @@ def get_credentials(cfg):
         flow.user_agent = cfg['project_name']
         flags = tools.argparser.parse_args([])
         credentials = tools.run_flow(flow, store, flags)
-        print('Storing credentials to ' + credential_path)
     return credentials
+
+
+def get_service(service_type, version, creds):
+    """Requests a service from the Google API"""
+    http = creds.authorize(httplib2.Http())
+    return discovery.build(service_type, version, http=http)
+
+
+class Creds(object):
+    """Class to house credentials and manage timeouts"""
+    def __init__(self, cfg):
+        self._creds = get_credentials(cfg)
+        self._refresh_ttl = cfg['google_settings']['refresh_ttl']
+        self._versions = cfg['google_settings']['service_versions']
+
+    def cred(self):
+        """Returns the class variable if not close to expiring"""
+        if self._creds._expires_in() < self._refresh_ttl:
+            self._creds = self._creds.refresh(httplib2.Http())
+        return self._creds
+
+    def serv(self, service_type):
+        return get_service(service_type,
+                           self._versions[service_type],
+                           self.cred())

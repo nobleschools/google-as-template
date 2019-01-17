@@ -2,8 +2,9 @@
 """
 Functional tests for the google-as-template base
 """
+import os
 import yaml
-SETTINGS = 'settings/settings.yaml'
+SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
 
 
 class TestTesting(object):
