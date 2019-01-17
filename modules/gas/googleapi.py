@@ -45,8 +45,8 @@ class Creds(object):
     """Class to house credentials and manage timeouts"""
     def __init__(self, cfg):
         self._creds = get_credentials(cfg)
-        self._refresh_ttl = cfg['google_settings']['refresh_ttl']
-        self._versions = cfg['google_settings']['service_versions']
+        self._refresh_ttl = cfg['refresh_ttl']
+        self._versions = cfg['service_versions']
 
     def cred(self):
         """Returns the class variable if not close to expiring"""

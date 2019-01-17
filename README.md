@@ -28,7 +28,12 @@ features:
    4. Modify any of the remaining defaults if necessary (especially scopes)
 3. Run 'python google_as_manage.py create_project' to do an initial
    authentication and then push a starter script into your project directory.
-   If the authentication doesn't work via your local browser, you might
-   need to specify a command line option.
+   A few notes:
+   - If the authentication doesn't work via your local browser, you might
+     need to specify a command line option.
+   - Depending on what you've done before, you might need to enable the
+     specific APIs in you Google account. If this occurs, the script will
+     prompt with an error message indicating the URL to do so.
+
 4. Run 'python google_as_manage.py pull_scripts' to copy the Google Drive
    scripts into your local scripts folder for inclusion into version control.

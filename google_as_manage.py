@@ -47,7 +47,7 @@ def create_project(cfg):
                 'type': 'SERVER_JS',
                 'source': SAMPLE_CODE
             }, {
-                'name': 'appscript',
+                'name': 'appsscript',
                 'type': 'JSON',
                 'source': SAMPLE_MANIFEST
             }]
