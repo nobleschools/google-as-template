@@ -8,7 +8,9 @@ google_settings:  # First three lines are based on your project
   # project_name: 'Enter the name of your project here'
   project_name: 'GAS Test'
   # script_name: 'Enter the name of your script file here (will be created)'
+  project_tz: 'America/Chicago'
   script_name: 'Apps Scripts'
+  local_script_dir: 'scripts'
   store_dir: '.credentials'  # From this line down, modifiable defaults
   credentials_file: 'credentials.json'
   credentials_store: 'credentials_store.json'

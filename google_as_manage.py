@@ -10,6 +10,7 @@ import sys
 import yaml
 from apiclient import errors
 from modules.gas import googleapi
+from modules.gas import filework
 
 SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
 SAMPLE_CODE = '''
@@ -17,12 +18,13 @@ function helloWorld() {
   console.log("Hello, world!");
 }
 '''.strip()
+SAMPLE_CODE = filework.grab_file_as_text('scripts/utilities.js')
 SAMPLE_MANIFEST = '''
 {
-  "timeZone": "America/New_York",
-  "exceptionLogging": "CLOUD"
+  "timeZone": "America/New_York"
 }
 '''.strip()
+#  "exceptionLogging": "CLOUD"
 
 
 def create_project(cfg):
@@ -30,17 +32,30 @@ def create_project(cfg):
     Runs an authentication flow and then pushes an initial Apps Script file
     to the Google Drive folder specified in the Yaml file
     """
-    # creds = googleapi.get_credentials(cfg)
     creds = googleapi.Creds(cfg)
-    # print(creds.cred())
     service = creds.serv('script')
 
     try:
         # Create project
-        request = {'title': 'My script'}
+        request = {
+            'title': cfg['script_name'],
+            'parentId': cfg['project_dir']
+            }
         response = service.projects().create(body=request).execute()
 
-        # Upload two files to the project
+        # Upload files to the project
+        files = [
+            {'name': filename, 'type': 'SERVER_JS', 'source': code_body}
+            for filename, code_body in
+            filework.grab_js_files(cfg['local_script_dir']).items()
+        ]
+        files.append(
+            {
+                'name': 'appsscript',
+                'type': 'JSON',
+                'source': filework.build_manifest(cfg)
+            })
+        """
         request = {
             'files': [{
                 'name': 'hello',
@@ -52,6 +67,8 @@ def create_project(cfg):
                 'source': SAMPLE_MANIFEST
             }]
         }
+        """
+        request = {'files': files}
         response = service.projects().updateContent(
             body=request,
             scriptId=response['scriptId']).execute()
