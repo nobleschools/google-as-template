@@ -88,7 +88,7 @@ function getFilesDir(folder_key) {
  * as an object (with folder IDs as keys and file names concatentated to type).
  * @return {Object} A set of file names keyed by file ID.
  */
-function getFilesDir(folder_key) {
+function getFilesDirWithType(folder_key) {
   var folder = DriveApp.getFolderById(folder_key);
   var files = folder.getFiles();
   var fileSet = {};

@@ -34,6 +34,18 @@ features:
    - Depending on what you've done before, you might need to enable the
      specific APIs in you Google account. If this occurs, the script will
      prompt with an error message indicating the URL to do so.
+4. At the exit of the last step, a message will print telling you to change
+   the project of the newly created script. In order to execute the script
+   using the credentials you already have, you'll need both to have same
+   project.
+   - Go to the link provided by the last step. If you have multiple Google
+     accounts, you might need to switch to the correct account.
+   - Copy the "Project Number" under the "Project Info section on the left
+   - Go to the newly created script and go to Resources->Cloud Platform
+     project...
+   - In this dialog, enter the project number you just copied into the blank
+     under "Change Project" and then click "Set Project". Hit "Confirm".
+   - Close the dialog. You should be ready to execute.
 
-4. Run 'python google_as_manage.py pull_scripts' to copy the Google Drive
-   scripts into your local scripts folder for inclusion into version control.
+5. Run 'python google_as_manage.py check_creation' to see if everything is
+   working. This should list out all of the files in the project folder.

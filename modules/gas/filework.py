@@ -12,7 +12,7 @@ def grab_file_as_text(fn):
 def grab_js_files(js_dir):
     """Returns a dict of script files for building a project"""
     return {
-        fn.replace('.js', '.gs'): grab_file_as_text(os.path.join(js_dir, fn))
+        fn[:-3]: grab_file_as_text(os.path.join(js_dir, fn))
         for fn in os.listdir(js_dir) if fn.endswith('.js')
         }
 

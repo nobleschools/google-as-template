@@ -17,6 +17,7 @@ google_settings:  # First three lines are based on your project
   scopes:  # If these are changed, repeat flow by rm'ing credentials_store.json
     - 'https://www.googleapis.com/auth/drive'
     - 'https://www.googleapis.com/auth/script.projects'
+    - 'https://www.googleapis.com/auth/script.deployments'
     - 'https://spreadsheets.google.com/feeds'
     - 'https://www.googleapis.com/auth/spreadsheets'
   service_versions:
