@@ -46,6 +46,14 @@ features:
    - In this dialog, enter the project number you just copied into the blank
      under "Change Project" and then click "Set Project". Hit "Confirm".
    - Close the dialog. You should be ready to execute.
+5. In addition to changing the project, you'll need to create a "Deployment"
+   in the project file:
+   - Go to Publish->Deploy as API executable...
+   - In the "Describe this version" prompt, enter "Initial version"
+   - Select "Anyone" in the "Who has access to the script" section
+   - Click "Continue if there's a warning
+   - Copy the "Current API ID" value and paste it into xxx
+     then hit close.
 
 5. Run 'python google_as_manage.py check_creation' to see if everything is
    working. This should list out all of the files in the project folder.

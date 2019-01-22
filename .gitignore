@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 .vscode
 .credentials/*
+settings/local_settings.yaml

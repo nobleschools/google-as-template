@@ -13,18 +13,6 @@ from modules.gas import googleapi
 from modules.gas import filework
 
 SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
-SAMPLE_CODE = '''
-function helloWorld() {
-  console.log("Hello, world!");
-}
-'''.strip()
-SAMPLE_CODE = filework.grab_file_as_text('scripts/utilities.js')
-SAMPLE_MANIFEST = '''
-{
-  "timeZone": "America/New_York"
-}
-'''.strip()
-#  "exceptionLogging": "CLOUD"
 
 
 def create_project(cfg):
@@ -57,9 +45,9 @@ def create_project(cfg):
             body=request,
             scriptId=response['scriptId']).execute()
 
-        print('scriptId:'+response['scriptId'])
-        # TODO: stash the scriptId to an object that destructs to Yaml
-        # TODO: autodeploy
+        local_info = googleapi.ScriptSettings(cfg,
+                                              scriptId=response['scriptId'])
+        print(local_info)
         print('Script created. You will need to change the project to the')
         print('one used for this script. Find the project number here:')
         print('https://console.cloud.google.com/home/dashboard?project=' +
@@ -76,10 +64,23 @@ def explore(cfg):
     """
     creds = googleapi.Creds(cfg)
     scriptId = '1zr9yZn40_sDQ1MFZ6ZcdeNwbDYVKoyb-WAX-kmmidfJrdbVaXX9XJzO4'
+    scriptId = '1-RX6VBt7Ki1A6TU4pxUYJ3oum0zvc_XuuJLzazuo35kPOD7SykE6fmvN'
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
+    """
+    request = {
+        "versionNumber": 1,
+        "manifestFileName": "appsscript",
+        "description": "Initial deployment"
+    }
+    new_dep = service.projects().deployments().create(
+        body=request, scriptId=scriptId
+        ).execute()
+    print(new_dep)
+    """
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
-    print(proj)
+    print(proj['deployments'][1])
+    # print(proj)
     # print(dir(creds.cred()))
     # proj = service.projects().get(scriptId=scriptId).execute()
     # print(dir(service.projects()))
@@ -91,6 +92,7 @@ def check_creation(cfg):
     """
     # scriptId = '1zr9yZn40_sDQ1MFZ6ZcdeNwbDYVKoyb-WAX-kmmidfJrdbVaXX9XJzO4'
     sid = 'MRgvswe7399HDuFcaIZvZ-jVcHF5GG3Ew'
+    sid = 'MX9BQFwWOt5vDKdFmBbBqCzVcHF5GG3Ew'
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
     request = {"function": "getFilesDirWithType",

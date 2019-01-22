@@ -3,6 +3,7 @@
 """Functions for working with the Google API"""
 import os
 import json
+import yaml
 import httplib2
 from apiclient import discovery
 from apiclient import errors
@@ -49,6 +50,35 @@ def get_service(service_type, version, creds):
     """Requests a service from the Google API"""
     http = creds.authorize(httplib2.Http())
     return discovery.build(service_type, version, http=http)
+
+
+class ScriptSettings(object):
+    """
+    Class to hold local settings and construct/destruct locally
+    to a YAML file
+    """
+    def __init__(self, cfg, scriptId=''):
+        self.local_settings = cfg['local_settings']
+        if os.path.exists(self.local_settings):
+            self.settings = yaml.load(self.local_settings)
+        else:
+            self.settings = {
+                'scriptId': scriptId,
+                'API ID': '',
+            }
+
+    def __repr__(self):
+        return 'scriptId: '+self.settings['scriptId']
+
+    def set_api_id(self, id):
+        self.settings['API ID'] = id
+
+    def get_api_id(self):
+        return self.settings['API ID']
+
+    def __del__(self):
+        with open(self.local_settings, 'w') as f:
+            yaml.dump(self.settings, f, default_flow_style=False)
 
 
 class Creds(object):

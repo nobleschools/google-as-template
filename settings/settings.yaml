@@ -11,13 +11,13 @@ google_settings:  # First three lines are based on your project
   project_tz: 'America/Chicago'
   script_name: 'Apps Scripts'
   local_script_dir: 'scripts'
+  local_settings: 'settings/local_settings.yaml'
   store_dir: '.credentials'  # From this line down, modifiable defaults
   credentials_file: 'credentials.json'
   credentials_store: 'credentials_store.json'
   scopes:  # If these are changed, repeat flow by rm'ing credentials_store.json
     - 'https://www.googleapis.com/auth/drive'
     - 'https://www.googleapis.com/auth/script.projects'
-    - 'https://www.googleapis.com/auth/script.deployments'
     - 'https://spreadsheets.google.com/feeds'
     - 'https://www.googleapis.com/auth/spreadsheets'
   service_versions:
