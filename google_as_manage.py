@@ -62,44 +62,31 @@ def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
     """
+    local_info = googleapi.ScriptSettings(cfg)
     creds = googleapi.Creds(cfg)
-    scriptId = '1zr9yZn40_sDQ1MFZ6ZcdeNwbDYVKoyb-WAX-kmmidfJrdbVaXX9XJzO4'
-    scriptId = '1-RX6VBt7Ki1A6TU4pxUYJ3oum0zvc_XuuJLzazuo35kPOD7SykE6fmvN'
+    scriptId = local_info.get_script_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
-    """
-    request = {
-        "versionNumber": 1,
-        "manifestFileName": "appsscript",
-        "description": "Initial deployment"
-    }
-    new_dep = service.projects().deployments().create(
-        body=request, scriptId=scriptId
-        ).execute()
-    print(new_dep)
-    """
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
     print(proj['deployments'][1])
-    # print(proj)
-    # print(dir(creds.cred()))
-    # proj = service.projects().get(scriptId=scriptId).execute()
-    # print(dir(service.projects()))
 
 
 def check_creation(cfg):
     """
     Simple target to run after creation to see if scripts can be run
     """
-    # scriptId = '1zr9yZn40_sDQ1MFZ6ZcdeNwbDYVKoyb-WAX-kmmidfJrdbVaXX9XJzO4'
-    sid = 'MRgvswe7399HDuFcaIZvZ-jVcHF5GG3Ew'
-    sid = 'MX9BQFwWOt5vDKdFmBbBqCzVcHF5GG3Ew'
+    local_info = googleapi.ScriptSettings(cfg)
+    sid = local_info.get_api_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
     request = {"function": "getFilesDirWithType",
                "parameters": [cfg['project_dir']],
                }
     out = googleapi.call_apps_script(request, service, sid)
-    print(out)
+    print('There are {} files in the folder'.format(len(out)))
+    for k, v in out.items():
+        name, mimetype = v.split(sep=':')
+        print('{} (type {}) with key {}'.format(name, mimetype, k))
 
 
 def pull_scripts(cfg):
@@ -110,15 +97,10 @@ def pull_scripts(cfg):
     # IMPLEMENT!
     # Deploy and get sid
     # figure out project matching
-    sid = 'MhO2yxJlFOfl8sYePYS4kmzVcHF5GG3Ew'
+    local_info = googleapi.ScriptSettings(cfg)
+    sid = local_info.get_api_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
-    # print(dir(service.projects().versions()))
-    request = {"function": "getFilesDirWithType",
-               "parameters": [cfg['project_dir']],
-               }
-    foo = googleapi.call_apps_script(request, service, sid)
-    print(foo)
 
 
 targets = {

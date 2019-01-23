@@ -1,16 +1,10 @@
 #!python3
 """
-Functional tests for the google-as-template base
+Unit tests for the google-as-template base
 """
 import os
 import yaml
 SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
-
-
-class TestTesting(object):
-    def test_that_testing_works(self):
-        x = 'this'
-        assert 'h' in x
 
 
 class TestYaml(object):

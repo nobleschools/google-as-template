@@ -2,6 +2,7 @@
 
 """Functions for working with the Google API"""
 import os
+import shutil
 import json
 import yaml
 import httplib2
@@ -57,14 +58,15 @@ class ScriptSettings(object):
     Class to hold local settings and construct/destruct locally
     to a YAML file
     """
-    def __init__(self, cfg, scriptId=''):
+    def __init__(self, cfg, scriptId='', apiId=''):
         self.local_settings = cfg['local_settings']
         if os.path.exists(self.local_settings):
-            self.settings = yaml.load(self.local_settings)
+            with open(self.local_settings, 'r') as ymlfile:
+                self.settings = yaml.load(ymlfile)
         else:
             self.settings = {
                 'scriptId': scriptId,
-                'API ID': '',
+                'API ID': apiId,
             }
 
     def __repr__(self):
@@ -73,10 +75,14 @@ class ScriptSettings(object):
     def set_api_id(self, id):
         self.settings['API ID'] = id
 
+    def get_script_id(self):
+        return self.settings['scriptId']
+
     def get_api_id(self):
         return self.settings['API ID']
 
     def __del__(self):
+        shutil.copy(self.local_settings, self.local_settings+'.bak')
         with open(self.local_settings, 'w') as f:
             yaml.dump(self.settings, f, default_flow_style=False)
 

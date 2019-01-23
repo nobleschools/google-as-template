@@ -39,11 +39,11 @@ features:
    - Go to Publish->Deploy as API executable...
    - In the "Describe this version" prompt, enter "Initial version"
    - Select "Anyone" in the "Who has access to the script" section
-   - Click "Continue if there's a warning
+   - Click "Continue" if there's a warning
    - Copy the "Current API ID" value and replace the '' in
      settings/local_settings.yaml next to 'API ID' with this value 
-     then hit close.
-5. At the exit of the "create_project" step, a message will print telling you
+     then hit close. _(This file is created by the prior step.)_
+5. At the exit of the "create_project" step, a message printed telling you
    to change the project of the newly created script. In order to execute the
    script using the credentials you already have, you'll need both to have same
    project.
