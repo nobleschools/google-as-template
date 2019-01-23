@@ -7,7 +7,6 @@ Script API and Google Sheets
 
 import os
 import sys
-import yaml
 from apiclient import errors
 from modules.gas import googleapi
 from modules.gas import filework
@@ -18,7 +17,9 @@ SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
 def create_project(cfg):
     """
     Runs an authentication flow and then pushes an initial Apps Script file
-    to the Google Drive folder specified in the Yaml file
+    to the Google Drive folder specified in the Yaml file. Creates a
+    local_settings.yaml file to hold the script id and api id. The latter
+    has to be entered manually per the instructions in the README file.
     """
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
@@ -39,7 +40,6 @@ def create_project(cfg):
         ]
         files.append({'name': 'appsscript', 'type': 'JSON',
                      'source': filework.build_manifest(cfg)})
-        # print(files)
         request = {'files': files}
         response = service.projects().updateContent(
             body=request,
@@ -48,6 +48,7 @@ def create_project(cfg):
         local_info = googleapi.ScriptSettings(cfg,
                                               scriptId=response['scriptId'])
         print(local_info)
+        local_info.store()
         print('Script created. You will need to change the project to the')
         print('one used for this script. Find the project number here:')
         print('https://console.cloud.google.com/home/dashboard?project=' +
@@ -62,9 +63,7 @@ def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
     """
-    local_info = googleapi.ScriptSettings(cfg)
-    creds = googleapi.Creds(cfg)
-    scriptId = local_info.get_script_id()
+    scriptId = googleapi.ScriptSettings(cfg).get_script_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
@@ -75,8 +74,7 @@ def check_creation(cfg):
     """
     Simple target to run after creation to see if scripts can be run
     """
-    local_info = googleapi.ScriptSettings(cfg)
-    sid = local_info.get_api_id()
+    sid = googleapi.ScriptSettings(cfg).get_api_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
     request = {"function": "getFilesDirWithType",
@@ -94,15 +92,18 @@ def pull_scripts(cfg):
     Makes local copies of all script files in the Drive folder configured
     in the Yaml file
     """
-    # IMPLEMENT!
-    # Deploy and get sid
-    # figure out project matching
-    local_info = googleapi.ScriptSettings(cfg)
-    sid = local_info.get_api_id()
     creds = googleapi.Creds(cfg)
-    service = creds.serv('script')
+    response = creds.serv('script').projects().getContent(
+        scriptId=googleapi.ScriptSettings(cfg).get_script_id()
+        ).execute()
+    print('Saving {} files locally'.format(len(response['files'])))
+    for file in response['files']:
+        filename = os.path.join(cfg['local_script_dir'], file['name'])
+        filename += '.json' if file['name'] == 'appsscript' else '.js'
+        filework.save_string_as_text_file(filename, file['source'])
 
 
+# Global variables to define the targets for this tool
 targets = {
     'create_project': create_project,
     'check_creation': check_creation,
@@ -115,6 +116,5 @@ if __name__ == '__main__':
             sys.argv[0], '/'.join(targets.keys())
         ))
     else:
-        with open(SETTINGS, 'r') as ymlfile:
-            cfg = yaml.load(ymlfile)
+        cfg = filework.grab_yaml(SETTINGS)
         targets[sys.argv[1]](cfg['google_settings'])

@@ -2,22 +2,20 @@
 
 """Functions for working with the Google API"""
 import os
-import shutil
 import json
-import yaml
 import httplib2
 from apiclient import discovery
 from apiclient import errors
 from oauth2client import tools
 from oauth2client import client
 from oauth2client.file import Storage
+from modules.gas import filework
 
 
 def get_credential_project(cfg):
     """Retrieves the project name for the current credentials"""
     secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
-    with open(secret_path, 'r') as f:
-        cred_data = json.loads(f.read())
+    cred_data = json.loads(filework.grab_file_as_text(secret_path))
     return cred_data['installed']['project_id']
 
 
@@ -37,11 +35,19 @@ def get_credentials(cfg):
     credential_path = os.path.join(cfg['store_dir'], cfg['credentials_store'])
     store = Storage(credential_path)
     credentials = store.get()
+    print('Credentials: {}'.format(str(credentials)))  # delete this later
+
+    if not credentials or credentials.invalid:
+        # Delete this later: trying to monitor intermittent failures
+        print('Grabbing credentials a second time')
+        credentials = store.get()
 
     if not credentials or credentials.invalid:
         secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
         flow = client.flow_from_clientsecrets(secret_path, cfg['scopes'])
         flow.user_agent = cfg['project_name']
+
+        # This line keeps run_flow from trying to parse the command line
         flags = tools.argparser.parse_args([])
         credentials = tools.run_flow(flow, store, flags)
     return credentials
@@ -55,14 +61,13 @@ def get_service(service_type, version, creds):
 
 class ScriptSettings(object):
     """
-    Class to hold local settings and construct/destruct locally
+    Class to hold local settings and construct/save locally
     to a YAML file
     """
     def __init__(self, cfg, scriptId='', apiId=''):
         self.local_settings = cfg['local_settings']
         if os.path.exists(self.local_settings):
-            with open(self.local_settings, 'r') as ymlfile:
-                self.settings = yaml.load(ymlfile)
+            self.settings = filework.grab_yaml(self.local_settings)
         else:
             self.settings = {
                 'scriptId': scriptId,
@@ -81,10 +86,8 @@ class ScriptSettings(object):
     def get_api_id(self):
         return self.settings['API ID']
 
-    def __del__(self):
-        shutil.copy(self.local_settings, self.local_settings+'.bak')
-        with open(self.local_settings, 'w') as f:
-            yaml.dump(self.settings, f, default_flow_style=False)
+    def store(self):
+        filework.store_yaml(self.local_settings, self.settings)
 
 
 class Creds(object):
@@ -92,14 +95,15 @@ class Creds(object):
     def __init__(self, cfg):
         self._creds = get_credentials(cfg)
         # Next two lines because the above fails sometimes
-        if not self._creds:
+        if self._creds is None:
+            print('In second get_credentials call inside object')
             self._creds = get_credentials(cfg)
         self._refresh_ttl = cfg['refresh_ttl']
         self._versions = cfg['service_versions']
         self.project = get_credential_project(cfg)
 
     def cred(self):
-        """Returns the class variable if not close to expiring"""
+        """Returns the class variable, refreshing if close to expiring"""
         if self._creds._expires_in() < self._refresh_ttl:
             self._creds = self._creds.refresh(httplib2.Http())
         return self._creds
@@ -124,11 +128,12 @@ def output_script_error(error):
 
 
 def call_apps_script(request, service, script_id,
-                     error_handler=output_script_error):
+                     error_handler=output_script_error,
+                     dev_mode="true"):
     """
     Helper function to call app_script and manage any errors
     """
-    request["devMode"] = "true"  # runs last save instead of deployments
+    request["devMode"] = dev_mode  # runs latest save if true (vs deployment)
     try:
         response = service.scripts().run(
             body=request,

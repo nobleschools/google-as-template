@@ -2,6 +2,22 @@
 
 """Functions for doing the filesystem work related with google-as-template"""
 import os
+import yaml
+
+
+def grab_yaml(fn):
+    with open(fn, 'r') as ymlfile:
+        return yaml.load(ymlfile)
+
+
+def store_yaml(fn, data_dict):
+    with open(fn, 'w') as ymlfile:
+        yaml.dump(data_dict, ymlfile, default_flow_style=False)
+
+
+def save_string_as_text_file(fn, data):
+    with open(fn, 'w') as f:
+        f.write(data)
 
 
 def grab_file_as_text(fn):
@@ -19,4 +35,8 @@ def grab_js_files(js_dir):
 
 def build_manifest(cfg):
     """Returns the JSON manifest for a new project either from file or cfg"""
-    return '{\n  "timeZone": "TZ"\n}'.replace('TZ', cfg['project_tz'])
+    manifest_file = os.path.join(cfg['local_script_dir'], 'appsscript.json')
+    if os.path.exists(manifest_file):
+        return grab_file_as_text(manifest_file)
+    else:
+        return '{\n  "timeZone": "{}"\n}'.format(cfg['project_tz'])

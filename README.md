@@ -87,3 +87,10 @@ xx
 
 xx
 
+
+---
+
+## References:
+
+- [Google Quickstart for Apps Script API](https://developers.google.com/apps-script/api/quickstart/python)
+- [Google How-to for executing scripts](https://developers.google.com/apps-script/api/how-tos/execute)
