@@ -35,12 +35,8 @@ def get_credentials(cfg):
     credential_path = os.path.join(cfg['store_dir'], cfg['credentials_store'])
     store = Storage(credential_path)
     credentials = store.get()
-    print('Credentials: {}'.format(str(credentials)))  # delete this later
-
-    if not credentials or credentials.invalid:
-        # Delete this later: trying to monitor intermittent failures
-        print('Grabbing credentials a second time')
-        credentials = store.get()
+    # Weird error where a token grab gets timed out sometimes:
+    credentials = store.get()
 
     if not credentials or credentials.invalid:
         secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
@@ -94,10 +90,6 @@ class Creds(object):
     """Class to house credentials and manage timeouts"""
     def __init__(self, cfg):
         self._creds = get_credentials(cfg)
-        # Next two lines because the above fails sometimes
-        if self._creds is None:
-            print('In second get_credentials call inside object')
-            self._creds = get_credentials(cfg)
         self._refresh_ttl = cfg['refresh_ttl']
         self._versions = cfg['service_versions']
         self.project = get_credential_project(cfg)
