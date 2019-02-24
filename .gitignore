@@ -105,3 +105,4 @@ venv.bak/
 .vscode
 .credentials/*
 settings/local_settings.yaml*
+todo.txt

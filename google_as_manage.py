@@ -59,6 +59,16 @@ def create_project(cfg):
         print(error.content)
 
 
+def _inspect(obj):
+    print('Inspecting {}'.format(type(obj)))
+    try:
+        for k, v in obj.items():
+            print('Key: {}, Type: {}'.format(k, type(v)))
+    except Exception as e:
+        for x in dir(obj):
+            print('Name: {}, Type: {}'.format(x, type(obj.__getattribute__(x))))
+
+
 def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
@@ -67,7 +77,9 @@ def explore(cfg):
     creds = googleapi.Creds(cfg)
     service = creds.serv('script')
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
-    print(proj['deployments'][1])
+    _inspect(proj)
+    # print(proj['deployments'][0])
+    # print(proj['deployments'][1])
 
 
 def check_creation(cfg):
