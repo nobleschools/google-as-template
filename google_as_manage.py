@@ -7,6 +7,7 @@ Script API and Google Sheets
 
 import os
 import sys
+import gspread
 from apiclient import errors
 from modules.gas import googleapi
 from modules.gas import filework
@@ -72,6 +73,18 @@ def _inspect(obj):
             print('Name: {}, Type: {}'.format(
                 x, type(obj.__getattribute__(x))))
         raise e
+
+
+def make_basic(cfg):
+    """
+    Create an initial Google Doc and demonstrate the capabilities of repo
+    """
+    scriptId = googleapi.ScriptSettings(cfg).get_script_id()
+    creds = googleapi.Creds(cfg)
+    service = creds.serv('script')
+    gc = gspread.authorize(creds)
+    new_doc = gc.create('test doc')
+
 
 
 def explore(cfg):
@@ -148,6 +161,7 @@ def pull_scripts(cfg):
 
 # Global variables to define the targets for this tool
 targets = {
+    'make_basic': make_basic,
     'create_project': create_project,
     'check_creation': check_creation,
     'pull_scripts': pull_scripts,
