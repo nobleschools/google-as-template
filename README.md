@@ -34,12 +34,10 @@ features:
    - Depending on what you've done before, you might need to enable the
      specific APIs in you Google account. If this occurs, the script will
      prompt with an error message indicating the URL to do so.
-4. In order to run these scripts with the API, you'll need to create a
-   "Deployment" in the newly created project file:
+   - After execution, the script outputs a project link. Note that for step 5.
+4. In order to run these scripts with the API, you'll need to use a
+   "Deployment" in the newly created project file. In the project file:
    - Go to Publish->Deploy as API executable...
-   - In the "Describe this version" prompt, enter "Initial version"
-   - Select "Anyone" in the "Who has access to the script" section
-   - Click "Continue" if there's a warning
    - Copy the "Current API ID" value and replace the '' in
      settings/local_settings.yaml next to 'API ID' with this value 
      then hit close. _(This file is created by the prior step.)_

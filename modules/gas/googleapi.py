@@ -52,14 +52,13 @@ def get_credentials(cfg):
 def get_service(service_type, version, creds):
     """Requests a service from the Google API"""
     try:
-        http = creds.authorize(httplib2.Http())
+        return discovery.build(service_type, version, credentials=creds)
     except AttributeError as e:
         print('Printing details for creds')
         print(dir(creds))
         for k, v in creds.items():
             print('Key: {}, Type: {}'.format(k, type(v)))
         raise e
-    return discovery.build(service_type, version, http=http)
 
 
 class ScriptSettings(object):

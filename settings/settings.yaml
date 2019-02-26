@@ -9,7 +9,7 @@ google_settings:  # First three lines are based on your project
   project_name: 'GAS Test'
   # script_name: 'Enter the name of your script file here (will be created)'
   project_tz: 'America/Chicago'
-  script_name: 'Apps Scripts2'
+  script_name: 'Apps Scripts'
   local_script_dir: 'scripts'
   local_settings: 'settings/local_settings.yaml'
   store_dir: '.credentials'  # From this line down, modifiable defaults

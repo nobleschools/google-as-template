@@ -33,6 +33,8 @@ def create_project(cfg):
         response = service.projects().create(body=request).execute()
 
         # Upload files to the project
+        push_scripts(cfg, service=service, scriptId=response['scriptId'])
+        """
         files = [
             {'name': filename, 'type': 'SERVER_JS', 'source': code_body}
             for filename, code_body in
@@ -45,6 +47,7 @@ def create_project(cfg):
             body=request,
             scriptId=response['scriptId']).execute()
 
+        """
         local_info = googleapi.ScriptSettings(cfg,
                                               scriptId=response['scriptId'])
         print(local_info)
@@ -66,7 +69,9 @@ def _inspect(obj):
             print('Key: {}, Type: {}'.format(k, type(v)))
     except Exception as e:
         for x in dir(obj):
-            print('Name: {}, Type: {}'.format(x, type(obj.__getattribute__(x))))
+            print('Name: {}, Type: {}'.format(
+                x, type(obj.__getattribute__(x))))
+        raise e
 
 
 def explore(cfg):
@@ -99,6 +104,32 @@ def check_creation(cfg):
         print('{} (type {}) with key {}'.format(name, mimetype, k))
 
 
+def push_scripts(cfg, service=None, scriptId=None):
+    """
+    Takes local copies of all script files and pushes them to the project.
+    Note, this overwrites everything in the cloud version of the project.
+    """
+    if not service:
+        creds = googleapi.Creds(cfg)
+        service = creds.serv('script')
+    if not scriptId:
+        scriptId = googleapi.ScriptSettings(cfg).get_script_id()
+
+    files = [
+            {'name': filename, 'type': 'SERVER_JS', 'source': code_body}
+            for filename, code_body in
+            filework.grab_js_files(cfg['local_script_dir']).items()
+        ]
+    files.append({'name': 'appsscript', 'type': 'JSON',
+                  'source': filework.build_manifest(cfg)})
+    request = {'files': files}
+    response = service.projects().updateContent(
+        body=request,
+        scriptId=scriptId
+        ).execute()
+    return response
+
+
 def pull_scripts(cfg):
     """
     Makes local copies of all script files in the Drive folder configured
@@ -120,6 +151,7 @@ targets = {
     'create_project': create_project,
     'check_creation': check_creation,
     'pull_scripts': pull_scripts,
+    'push_scripts': push_scripts,
     'explore': explore,
 }
 if __name__ == '__main__':
