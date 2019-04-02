@@ -12,6 +12,14 @@ google_settings:  # First three lines are based on your project
   script_name: 'Apps Scripts'
   local_script_dir: 'scripts'
   local_settings: 'settings/local_settings.yaml'
+  # logging_conf: 'settings/logging.conf'
+  # The 4 entries below are for setting up remote and local logging
+  log_format: '%(asctime)s %(hostname)s %(jobname)s: [%(levelname)s] %(message)s'
+  log_date_format: '%b %d %H:%M:%S'
+  log_hostname: google-as-template
+  log_address:
+    - logs.papertrailapp.com  # replace with your log destination
+    - 29133  # replace with your port
   store_dir: '.credentials'  # From this line down, modifiable defaults
   credentials_file: 'credentials.json'
   credentials_store: 'credentials_store.json'

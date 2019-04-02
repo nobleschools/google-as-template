@@ -8,11 +8,15 @@ Script API and Google Sheets
 import os
 import sys
 import gspread
+#import logging
+#import logging.config
+
 from apiclient import errors
+from modules.papertrail_struct_logger import get_logger
 from modules.gas import googleapi
 from modules.gas import filework
 
-SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
+SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yml')
 
 
 def create_project(cfg):
@@ -143,6 +147,21 @@ def push_scripts(cfg, service=None, scriptId=None):
     return response
 
 
+def test_logging(cfg):
+    """
+    Just testing the logging right now--will likely delete
+    """
+    cfg['logger'] = get_logger('as-test', cfg)
+    cfg['logger'] = cfg['logger'].bind(sub='main')
+
+    cfg['logger'].debug('debug message')
+    cfg['logger'].info('info message')
+    cfg['logger'].warning('message', text='warn message')
+    googleapi.logging_dummy(cfg)
+    cfg['logger'].error('error message')
+    cfg['logger'].critical('critical message')
+
+
 def pull_scripts(cfg):
     """
     Makes local copies of all script files in the Drive folder configured
@@ -167,6 +186,7 @@ targets = {
     'pull_scripts': pull_scripts,
     'push_scripts': push_scripts,
     'explore': explore,
+    'test_logging': test_logging,
 }
 if __name__ == '__main__':
     if len(sys.argv) != 2:
