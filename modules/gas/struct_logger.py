@@ -39,7 +39,9 @@ def get_logger(jobname, cfg):
                 becomes a 'system' in PT within the particular destination
     ** format: format string for logging
     ** date_format: date format string for logging
-    ** address: a two-part list w/ the address and port for remote logs
+    ** local_level: log level to send to stdout
+    ** remote_address: a two-part list w/ the address and port for remote logs
+    ** if the above is missing, only logs to stdout
     """
     # Declare basic logger and wrap in structlog for structured outputs
     logger = logging.getLogger(__name__)

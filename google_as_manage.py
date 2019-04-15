@@ -1,5 +1,4 @@
 #!python3
-
 """
 Management function for a set of tools designed to work with Google Apps
 Script API and Google Sheets
@@ -25,7 +24,7 @@ def create_project(cfg):
     has to be entered manually per the instructions in the README file.
     """
     creds = googleapi.Creds(cfg)
-    service = creds.serv('script')
+    service = creds.serv('script', cfg)
 
     try:
         # Create project
@@ -33,39 +32,26 @@ def create_project(cfg):
             'title': cfg['script_name'],
             'parentId': cfg['project_dir']
             }
+        cfg['logger'].info('Creating project', **request)
         response = service.projects().create(body=request).execute()
 
         # Upload files to the project
         push_scripts(cfg, service=service, scriptId=response['scriptId'])
-        """
-        files = [
-            {'name': filename, 'type': 'SERVER_JS', 'source': code_body}
-            for filename, code_body in
-            filework.grab_js_files(cfg['local_script_dir']).items()
-        ]
-        files.append({'name': 'appsscript', 'type': 'JSON',
-                     'source': filework.build_manifest(cfg)})
-        request = {'files': files}
-        response = service.projects().updateContent(
-            body=request,
-            scriptId=response['scriptId']).execute()
-
-        """
-        local_info = googleapi.ScriptSettings(cfg,
-                                              scriptId=response['scriptId'])
-        print(local_info)
+        local_info = googleapi.ScriptSettings(cfg, scriptId=response['scriptId'])
+        cfg['logger'].info(str(local_info))
         local_info.store()
-        print('Script created. You will need to change the project to the')
-        print('one used for this script. Find the project number here:')
-        print('https://console.cloud.google.com/home/dashboard?project=' +
-              creds.project)
-        print('Then follow the steps in the README.')
+        cfg['logger'].info('Script created. You will need to change the project to the')
+        cfg['logger'].info('one used for this script. Find the project number here:')
+        cfg['logger'].info('https://console.cloud.google.com/home/dashboard?project=' +
+                           creds.project)
+        cfg['logger'].info('Then follow the steps in the README.')
 
     except errors.HttpError as error:
-        print(error.content)
+        cfg['logger'].error(error.content)
 
 
 def _inspect(obj):
+    # DELETE WHOLE FUNCTION BEFORE 1.0
     print('Inspecting {}'.format(type(obj)))
     try:
         for k, v in obj.items():
@@ -81,9 +67,10 @@ def make_basic(cfg):
     """
     Create an initial Google Doc and demonstrate the capabilities of repo
     """
+    # NEXT STEP FOR CS-189 (need to work through issues)
     scriptId = googleapi.ScriptSettings(cfg).get_script_id()
     creds = googleapi.Creds(cfg)
-    service = creds.serv('script')
+    service = creds.serv('script', cfg)
     gc = gspread.authorize(creds)
     new_doc = gc.create('test doc')
 
@@ -92,9 +79,10 @@ def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
     """
+    # DELETE WHOLE FUNCTION BEFORE 1.0
     scriptId = googleapi.ScriptSettings(cfg).get_script_id()
     creds = googleapi.Creds(cfg)
-    service = creds.serv('script')
+    service = creds.serv('script', cfg)
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
     _inspect(proj)
     # print(proj['deployments'][0])
@@ -107,15 +95,15 @@ def check_creation(cfg):
     """
     sid = googleapi.ScriptSettings(cfg).get_api_id()
     creds = googleapi.Creds(cfg)
-    service = creds.serv('script')
+    service = creds.serv('script', cfg)
     request = {"function": "getFilesDirWithType",
                "parameters": [cfg['project_dir']],
                }
-    out = googleapi.call_apps_script(request, service, sid)
-    print('There are {} files in the folder'.format(len(out)))
+    out = googleapi.call_apps_script(request, service, sid, cfg)
+    cfg['logger'].info('There are {} files in the folder'.format(len(out)))
     for k, v in out.items():
         name, mimetype = v.split(sep=':')
-        print('{} (type {}) with key {}'.format(name, mimetype, k))
+        cfg['logger'].info('File details', name=name, mimetype=mimetype, key=k)
 
 
 def push_scripts(cfg, service=None, scriptId=None):
@@ -125,7 +113,7 @@ def push_scripts(cfg, service=None, scriptId=None):
     """
     if not service:
         creds = googleapi.Creds(cfg)
-        service = creds.serv('script')
+        service = creds.serv('script', cfg)
     if not scriptId:
         scriptId = googleapi.ScriptSettings(cfg).get_script_id()
 
@@ -137,6 +125,8 @@ def push_scripts(cfg, service=None, scriptId=None):
     files.append({'name': 'appsscript', 'type': 'JSON',
                   'source': filework.build_manifest(cfg)})
     request = {'files': files}
+    cfg['logger'].info('Pushing scripts', sub='push_scripts',
+                       files=', '.join([x['name'] for x in files]))
     response = service.projects().updateContent(
         body=request,
         scriptId=scriptId
@@ -146,12 +136,11 @@ def push_scripts(cfg, service=None, scriptId=None):
 
 def test_logging(cfg):
     """
-    Just testing the logging right now--will likely delete
+    An example function to test the logging setup
     """
     cfg['logger'].debug('debug message')
-    cfg['logger'].info('info message')
-    cfg['logger'].warning('message', text='warn message')
-    googleapi.logging_dummy(cfg)
+    cfg['logger'].info('Here are cfg contents', **{k: str(v) for k, v in cfg.items()})
+    cfg['logger'].warning('message', some_variable=1)
     cfg['logger'].error('error message')
     cfg['logger'].critical('critical message')
 
@@ -162,14 +151,16 @@ def pull_scripts(cfg):
     in the Yaml file
     """
     creds = googleapi.Creds(cfg)
-    response = creds.serv('script').projects().getContent(
+    response = creds.serv('script', cfg).projects().getContent(
         scriptId=googleapi.ScriptSettings(cfg).get_script_id()
         ).execute()
-    print('Saving {} files locally'.format(len(response['files'])))
-    for file in response['files']:
-        filename = os.path.join(cfg['local_script_dir'], file['name'])
-        filename += '.json' if file['name'] == 'appsscript' else '.js'
-        filework.save_string_as_text_file(filename, file['source'])
+    cfg['logger'].info('Saving {} files locally'.format(len(response['files'])))
+    cfg['logger'].info('Filenames', sub='pull_scripts',
+                       files=', '.join([f['name'] for f in response['files']]))
+    for f in response['files']:
+        filename = os.path.join(cfg['local_script_dir'], f['name'])
+        filename += '.json' if f['name'] == 'appsscript' else '.js'
+        filework.save_string_as_text_file(filename, f['source'])
 
 
 # Global variables to define the targets for this tool
@@ -179,7 +170,7 @@ targets = {
     'check_creation': check_creation,
     'pull_scripts': pull_scripts,
     'push_scripts': push_scripts,
-    'explore': explore,
+    'explore': explore,  # kill this
     'test_logging': test_logging,
 }
 if __name__ == '__main__':

@@ -12,12 +12,6 @@ from oauth2client.file import Storage
 from modules.gas import filework
 
 
-def logging_dummy(cfg):
-    """temp to test logging"""
-    cfg['logger'].debug('word to you, pal', sub='logging_dummy')  # This is a test 88
-    cfg['logger'].info('test again', sub='logging_dummy')
-
-
 def get_credential_project(cfg):
     """Retrieves the project name for the current credentials"""
     secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
@@ -43,6 +37,7 @@ def get_credentials(cfg):
     credentials = store.get()
     # Weird error where a token grab gets timed out sometimes:
     credentials = store.get()
+    cfg['logger'].debug('Getting credentials', sub='get_credentials')
 
     if not credentials or credentials.invalid:
         secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
@@ -55,15 +50,16 @@ def get_credentials(cfg):
     return credentials
 
 
-def get_service(service_type, version, creds):
+def get_service(service_type, version, creds, cfg):
     """Requests a service from the Google API"""
+    cfg['logger'].debug('Getting service', sub='get_service', service_type=service_type,
+                        version=version)
     try:
         return discovery.build(service_type, version, credentials=creds)
     except AttributeError as e:
-        print('Printing details for creds')
-        print(dir(creds))
-        for k, v in creds.items():
-            print('Key: {}, Type: {}'.format(k, type(v)))
+        cfg['logger'].warning('Credentials attribute error',
+                              sub='get_credentials',
+                              **{k: str(v) for k, v in creds.items()})
         raise e
 
 
@@ -112,43 +108,45 @@ class Creds(object):
             self._creds = self._creds.refresh(httplib2.Http())
         return self._creds
 
-    def serv(self, service_type):
+    def serv(self, service_type, cfg):
         return get_service(service_type,
                            self._versions[service_type],
-                           self.cred())
+                           self.cred(), cfg)
 
 
-def output_script_error(error):
+def output_script_error(error, cfg):
     """
     Cleanly outputs an error return from an Apps Script API call
     """
-    print('Script error message: %s' % str(error['errorMessage']))
+    cfg['logger'].error('Script error', error_message=str(error['errorMessage']))
     if 'scriptStackTraceElements' in error:
-        print('Script error stacktrace:')
+        cfg['logger'].error('Script error stracktrace follows')
         for trace in error['scriptStackTraceElements']:
-            print('\t%s: %s' % (str(trace['function']),
-                                str(trace['lineNumber'])))
+            cfg['logger'].error('\t%s: %s' % (str(trace['function']),
+                                              str(trace['lineNumber'])))
     return 'Error'
 
 
-def call_apps_script(request, service, script_id,
+def call_apps_script(request, service, script_id, cfg,
                      error_handler=output_script_error,
                      dev_mode="true"):
     """
     Helper function to call app_script and manage any errors
     """
     request["devMode"] = dev_mode  # runs latest save if true (vs deployment)
+    cfg['logger'].debug('Calling Apps Script', sub='call_apps_script',
+                        **{k: str(v) for k, v in request.items()})
     try:
         response = service.scripts().run(
             body=request,
             scriptId=script_id).execute()
         if 'error' in response:
             # Here, the script is returning an error
-            return error_handler(response['error']['details'][0])
+            return error_handler(response['error']['details'][0], cfg)
         else:
             return response['response'].get('result', {})
 
     except errors.HttpError as e:
         # Here, the script likely didn't execute: there was an error prior
-        print(e.content)
+        cfg['logger'].error(e.content)
         raise

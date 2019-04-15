@@ -10,7 +10,7 @@ features:
 
 1. Yaml template defining the project
 2. Helper scripts to clone/push apps scripts locally for source control
-3. Integration with logging and pytest
+3. Integration with logging (local and/or a remote service) and pytest
 4. Standard API functions and AppsScripts designed for spreadsheet projects
 
 ---
@@ -21,27 +21,25 @@ features:
    and follow "Step 1" to create a new console project, enable the API and
    receive credentials. Place the "credentials.json" file in a '.credentials'
    folder off the main directory. Also, note the new project name for later.
-2. Edit the settings/settings.yaml file as follows (all in google_settings):
+2. Edit the settings/settings.yml file as follows (all in google_settings):
    1. Change the project_name setting to the one you created in Step 1.
    2. Change the project_dir setting to the key for your Google Drive folder
    3. Change the default script name in script_name
    4. Modify any of the remaining defaults if necessary (especially scopes)
 3. Run 'python google_as_manage.py create_project' to do an initial
-   authentication and then push a starter script into your project directory.
+   authentication and then push a starter script into your project folder.
    A few notes:
+   - If you get an error immediately, just run it again--there's an issue
+     with the credentials not "catching" right away that is resolved by
+     simply running again
    - If the authentication doesn't work via your local browser, you might
      need to specify a command line option.
    - Depending on what you've done before, you might need to enable the
      specific APIs in you Google account. If this occurs, the script will
      prompt with an error message indicating the URL to do so.
-   - After execution, the script outputs a project link. Note that for step 5.
-4. In order to run these scripts with the API, you'll need to use a
-   "Deployment" in the newly created project file. In the project file:
-   - Go to Publish->Deploy as API executable...
-   - Copy the "Current API ID" value and replace the '' in
-     settings/local_settings.yaml next to 'API ID' with this value 
-     then hit close. _(This file is created by the prior step.)_
-5. At the exit of the "create_project" step, a message printed telling you
+   - After execution, the script outputs a project link. Note that for step 4.
+
+4. At the exit of the "create_project" step, a message printed telling you
    to change the project of the newly created script. In order to execute the
    script using the credentials you already have, you'll need both to have same
    project.
@@ -54,9 +52,27 @@ features:
      under "Change Project" and then click "Set Project". Hit "Confirm".
    - Close the dialog. You should be ready to execute.
 
+5. In order to run these scripts with the API, you'll need to use a
+   "Deployment" in the newly created project. In the project (in the Drive folder):
+   - Go to Publish->Deploy as API executable...
+   - Copy the "Current API ID" value and replace the '' in
+     settings/local_settings.yml next to 'API ID' with this value 
+     then hit close. _(This file is created by step 3.)_
+
 6. Run 'python google_as_manage.py check_creation' to see if everything is
    working. This should list out all of the files in the project folder.
 
+7. _Optional_: setup remote logging
+   - By default, all outputs are done via structlog to the console
+   - If you'd like to use a remote logger, get the hostname and port for your
+     service (e.g. Papertrail)
+   - In settings.yml, under the log_settings key at the bottom:
+     - Change the remote_settings_na key to remote_settings
+     - change the values below remote_settings to reflect your hostname and port
+   - Change the local_level to an integer representing the desired logging intensity
+     to console
+   - Run 'python google_as_manage.py test_logging' to see if you get five different
+     outputs of different levels to your remote logger
 ---
 
 ## Apps Script tools
