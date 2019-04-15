@@ -9,13 +9,12 @@ from apiclient import errors
 from oauth2client import tools
 from oauth2client import client
 from oauth2client.file import Storage
-from modules.papertrail_struct_logger import get_logger
 from modules.gas import filework
 
 
 def logging_dummy(cfg):
     """temp to test logging"""
-    cfg['logger'].debug('word to you, pal', sub='logging_dummy')
+    cfg['logger'].debug('word to you, pal', sub='logging_dummy')  # This is a test 88
     cfg['logger'].info('test again', sub='logging_dummy')
 
 

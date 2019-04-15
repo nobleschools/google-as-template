@@ -8,11 +8,9 @@ Script API and Google Sheets
 import os
 import sys
 import gspread
-#import logging
-#import logging.config
 
 from apiclient import errors
-from modules.papertrail_struct_logger import get_logger
+from modules.gas.struct_logger import get_logger
 from modules.gas import googleapi
 from modules.gas import filework
 
@@ -90,7 +88,6 @@ def make_basic(cfg):
     new_doc = gc.create('test doc')
 
 
-
 def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
@@ -151,9 +148,6 @@ def test_logging(cfg):
     """
     Just testing the logging right now--will likely delete
     """
-    cfg['logger'] = get_logger('as-test', cfg)
-    cfg['logger'] = cfg['logger'].bind(sub='main')
-
     cfg['logger'].debug('debug message')
     cfg['logger'].info('info message')
     cfg['logger'].warning('message', text='warn message')
@@ -195,4 +189,7 @@ if __name__ == '__main__':
         ))
     else:
         cfg = filework.grab_yaml(SETTINGS)
+        logger = get_logger('gas_'+sys.argv[1], cfg['log_settings'])
+        logger = logger.bind(sub='main')
+        cfg['google_settings']['logger'] = logger
         targets[sys.argv[1]](cfg['google_settings'])

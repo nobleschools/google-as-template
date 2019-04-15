@@ -1,8 +1,10 @@
 #!python3
 """
-papertrail_struct_logger.py
+struct_logger.py
 Logging setup to push log messages to Papertrail and stdout. Adapted from
 http://help.papertrailapp.com/kb/configuration/configuring-centralized-logging-from-python-apps/
+
+If no credentials exist for papertrail (or similar), defaults to stdout only
 """
 
 import logging
@@ -32,34 +34,39 @@ def get_logger(jobname, cfg):
     address and port of a PT log destination.
     Positional arguments:
     * jobname: job name to display in the Papertrail log stream
-    * cfg: A configuration dictionary with a number of fields
-    ** log_hostname: hostname to display in the Papertrail log stream. Also
+    * cfg: A configuration dict with a number of fields
+    ** hostname: hostname to display in the Papertrail log stream. Also
                 becomes a 'system' in PT within the particular destination
-    ** log_format: format string for logging
-    ** log_date_format: date format string for logging
-    ** log_address: a two-part list w/ the address and port for remote logs
+    ** format: format string for logging
+    ** date_format: date format string for logging
+    ** address: a two-part list w/ the address and port for remote logs
     """
+    # Declare basic logger and wrap in structlog for structured outputs
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     logger = structlog.wrap_logger(logger, wrapper_class=structlog.BoundLogger)
 
-    pt_filter = PapertrailContextFilter(cfg['log_hostname'], jobname)
+    # Add filter and define the baseline format
+    pt_filter = PapertrailContextFilter(cfg['hostname'], jobname)
     logger._logger.addFilter(pt_filter)
-    destination_address, destination_port = cfg['log_address']
-    syslog = SysLogHandler(address=(destination_address, destination_port))
     formatter = logging.Formatter(
-        cfg['log_format'], datefmt=cfg['log_date_format']
+        cfg['format'], datefmt=cfg['date_format']
     )
-    syslog.setFormatter(formatter)
-    logger._logger.addHandler(syslog)
+
+    # Setup the remote logging
+    if 'remote_address' in cfg:
+        destination_address, destination_port = cfg['remote_address']
+        syslog = SysLogHandler(address=(destination_address, destination_port))
+        syslog.setFormatter(formatter)
+        logger._logger.addHandler(syslog)
+
+    # Setup the local logging
     local_handler = logging.StreamHandler(sys.stdout)
+    local_handler.setLevel(cfg['local_level'])
     local_handler.setFormatter(formatter)
     logger._logger.addHandler(local_handler)
 
+    # This line allows subroutine calls to temporarily reference themselves distinctly
+    logger = logger.bind(sub='main')
+
     return logger
-
-    # return (destination, port)
-
-
-if __name__ == "__main__":
-    pass
