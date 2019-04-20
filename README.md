@@ -17,6 +17,7 @@ features:
 
 ## Getting started
 
+0. Install the requirements for this repository: 'pip install -r requirements.txt'
 1. Go to the [Google Apps Script API Python Quickstart](https://developers.google.com/apps-script/api/quickstart/python)
    and follow "Step 1" to create a new console project, enable the API and
    receive credentials. Place the "credentials.json" file in a '.credentials'
@@ -73,6 +74,14 @@ features:
      to console
    - Run 'python google_as_manage.py test_logging' to see if you get five different
      outputs of different levels to your remote logger
+
+8. _Optional_: Run the example project code to see what a sample use might look like
+   - In the main project directory, run the 'example_script.py'
+   - This will create a two tabbed spreadsheet in your Google Drive folder
+     - One tab is based on the example_data.csv source data in the 'example' folder
+     - The other tab is based on math from that folder
+     - Both are formatted based on the script file in the 'example' folder
+     - The end of the script downloads the contents of both tabs to local csv files
 ---
 
 ## Apps Script tools
@@ -87,20 +96,28 @@ to the local scripts folder (so you can package or push to git.)
 The second does the opposite, allowing you to overwrite the online project
 with the local script files.
 
-_Both functions a "destructive" and overwrite the destination._
+_Both functions a "destructive" and overwrite the destination._ However, if your
+local directory has a script not in the online project, it won't be deleted with
+a pull. Similarly, if you have a script in the online project that's not in the
+local directory, it won't be deleted with a push. (If that's your intent, you'll
+need to do it manually.)
 
 ---
 
 ## Usage for running script functions
 
-xx
+To learn the patterns for calling script and gspread functions, look at the example_script.py file.
+
+It is verbosely commented and is designed to help with getting up to speed on these details.
 
 ---
 
-## Extra tools for working with Google Sheets
+## Notes:
 
-xx
-
+- If you run one of these scripts and get an error like the following:
+  - 'AttributeError: 'NoneType' object has no attribute 'access_token'
+  - Just try again. There's currently a bug with stale credentials not picking up
+    immediately. It almost always goes away.
 
 ---
 

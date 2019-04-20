@@ -6,7 +6,6 @@ Script API and Google Sheets
 
 import os
 import sys
-import gspread
 
 from apiclient import errors
 from modules.gas.struct_logger import get_logger
@@ -63,18 +62,6 @@ def _inspect(obj):
         raise e
 
 
-def make_basic(cfg):
-    """
-    Create an initial Google Doc and demonstrate the capabilities of repo
-    """
-    # NEXT STEP FOR CS-189 (need to work through issues)
-    scriptId = googleapi.ScriptSettings(cfg).get_script_id()
-    creds = googleapi.Creds(cfg)
-    service = creds.serv('script', cfg)
-    gc = gspread.authorize(creds)
-    new_doc = gc.create('test doc')
-
-
 def explore(cfg):
     """
     Used for checking out the structure of the Google API (temporary)
@@ -84,6 +71,8 @@ def explore(cfg):
     creds = googleapi.Creds(cfg)
     service = creds.serv('script', cfg)
     proj = service.projects().deployments().list(scriptId=scriptId).execute()
+    print(scriptId)
+    print(service)
     _inspect(proj)
     # print(proj['deployments'][0])
     # print(proj['deployments'][1])
@@ -165,7 +154,6 @@ def pull_scripts(cfg):
 
 # Global variables to define the targets for this tool
 targets = {
-    'make_basic': make_basic,
     'create_project': create_project,
     'check_creation': check_creation,
     'pull_scripts': pull_scripts,
@@ -181,6 +169,5 @@ if __name__ == '__main__':
     else:
         cfg = filework.grab_yaml(SETTINGS)
         logger = get_logger('gas_'+sys.argv[1], cfg['log_settings'])
-        logger = logger.bind(sub='main')
         cfg['google_settings']['logger'] = logger
         targets[sys.argv[1]](cfg['google_settings'])
