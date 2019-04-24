@@ -38,7 +38,10 @@ def main(cfg):
 
     # The line above is only called once, but everytime we want to use credentials,
     # we access them through the cred() method as below.
-    # gc stands for 'google client' and is the main class for working with gspread
+    # gc stands for 'google client' and is the main class for working with the gspread
+    # library. In the below, we'll use both. gspread is best for bigger actions
+    # relating to Google Sheets (creating them, adding tabs, etc.) while Apps Scripts
+    # are best for more detailed work, particularly when it comes to formatting.
     gc = gspread.authorize(creds.cred())
 
     # This line creates a brand new Google sheet in the user's home dir
@@ -66,6 +69,8 @@ def main(cfg):
         l_o_l_csv_data = [row for row in reader]
     ws = new_doc.add_worksheet('Written_csv_sheet',
                                len(l_o_l_csv_data), len(l_o_l_csv_data[0]))
+    # The function below will write the data to a sheet using the update_cells method
+    # in the gspread library. It's more efficient for sparse data.
     googleapi.write_lol_to_sheet(ws, l_o_l_csv_data, cfg)
 
     # As yet a third method, we'll send it to an AppsScript function directly
@@ -77,6 +82,8 @@ def main(cfg):
         l_o_l_csv_data[i].insert(2, '=len(B'+str(i+1)+')')
     ws = new_doc.add_worksheet('AS_written_csv',
                                len(l_o_l_csv_data), len(l_o_l_csv_data[0]))
+    # This calls a function that was part of the utilities.js file that was pushed
+    # to the Apps Script project when you ran the setup
     googleapi.call_apps_script(
         {"function": "writeDataTable",
          "parameters": [new_doc.id, 'AS_written_csv', l_o_l_csv_data]
@@ -95,13 +102,41 @@ def main(cfg):
          },
         creds.serv('script', cfg), cfg)
 
-    # In addition to the saving of data tables, we can create summary tabs. Let's
-    # Summarize the number of presidents from each state
-    pres_states = [x[7] for x in l_o_l_csv_data]
+    # In addition to the saving of data tables, we can write new summary or other
+    # more structured tabs to sheets directly. Here, we'll create a tab that
+    # summarizes the number of presidents from each state
+    pres_states = [x[7] for x in l_o_l_csv_data[1:]]
     pres_states = list(set(pres_states))  # Reduce to unique values, one per state
     pres_states.sort()
+    num_states = len(pres_states)
+    cfg['logger'].info('Adding a tab that counts states.', pres_states=str(pres_states))
 
-    # (MIMIC SOL TRACKER CODE)
+    rows = 4 + num_states  # Title row at top, header row, sum row, blank row
+    cols = 5  # Blank column, state, count, count since 1900, blank column
+    ws = new_doc.add_worksheet('State_summary', rows, cols)
+    output_matrix = [
+        (1, 1, 'Summary of Presidents by state'),
+        (2, 2, 'State'),
+        (2, 3, 'Number of presidents'),
+        (2, 4, 'Number since 1900'),
+    ]
+    for i in range(num_states):
+        output_matrix.extend([
+            (i+3, 2, pres_states[i]),
+            (i+3, 3, '=COUNTIF(HomeState,B'+str(i+3)+')'),
+            (i+3, 4, '=COUNTIFS(HomeState,B'+str(i+3)+',StartDate,">1/1/1900")')
+        ])
+    output_matrix.extend([
+        (num_states+3, 2, 'Total'),
+        (num_states+3, 3, '=SUM(C3:C'+str(num_states+2))
+    ])  # There's one other summary, but we'll demonstrate that in the Apps Script
+
+    googleapi.send_bulk_data(ws, output_matrix, cfg)
+    googleapi.call_apps_script(
+        {"function": "formatSummarySheet",
+         "parameters": [new_doc.id, 'State_summary', len(pres_states)]
+         },
+        creds.serv('script', cfg), cfg)
 
     # Finally, let's read the data from the tables and save it locally
 

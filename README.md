@@ -5,7 +5,7 @@ Base configuration for working with Google Apps Scripts for Google Docs trackers
 ## Overview
 
 This repo is designed as a starting off point for projects that use Google
-Apps Scripts, primarily for access with Google Spreadsheets. It has few
+Apps Scripts, primarily for access with Google Spreadsheets. It has a few
 features:
 
 1. Yaml template defining the project
@@ -82,6 +82,8 @@ features:
      - The other tab is based on math from that folder
      - Both are formatted based on the script file in the 'example' folder
      - The end of the script downloads the contents of both tabs to local csv files
+   - Be sure to read through the code in example_script.py, because there are very
+     extensive comments that talk through the logic of the what and why for each step.
 ---
 
 ## Apps Script tools
@@ -116,8 +118,8 @@ It is verbosely commented and is designed to help with getting up to speed on th
 
 - If you run one of these scripts and get an error like the following:
   - 'AttributeError: 'NoneType' object has no attribute 'access_token'
-  - Just try again. There's currently a bug with stale credentials not picking up
-    immediately. It almost always goes away.
+- Just try again. There's currently a bug with stale credentials not picking up
+  immediately. It almost always goes away.
 
 ---
 

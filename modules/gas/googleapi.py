@@ -230,3 +230,29 @@ def write_lol_to_sheet(ws, lol_data, cfg, na_val='', resize=True,
             write_range[i].value = serial_data[i]
 
     ws.update_cells(write_range, value_input_option)
+
+
+def send_bulk_data(ws, output_matrix, cfg, value_input_option='USER_ENTERED'):
+    """
+    Takes a list of tuples (r, c, value) and pushes it to the
+    update_cells method instead of doing individual updates.
+    r and c values start with 1 because this a reference to Google Sheets.
+    This optimizes the number of read and write requests to the Google API
+    by first getting a range bound by the min and max coordinates and then
+    popping them from the list prior to writing.
+    The default for value_input_option tells Sheets to calculate formulas.
+    """
+    cfg['logger'].info('Writing cell data to sheet', sub='send_bulk_data',
+                       cells=len(output_matrix), sheet=ws.title)
+    rs = [x[0] for x in output_matrix]
+    cs = [x[1] for x in output_matrix]
+    cells = {str(x[0])+','+str(x[1]): x[2] for x in output_matrix}
+    write_range = ws.range(min(rs), min(cs), max(rs), max(cs))
+    for i in range(len(write_range)-1, -1, -1):
+        loc = str(write_range[i].row)+','+str(write_range[i].col)
+        if loc in cells:
+            write_range[i].value = cells[loc]
+        else:
+            write_range.pop(i)
+
+    ws.update_cells(write_range, value_input_option=value_input_option)
