@@ -22,6 +22,8 @@ from google_as_manage import push_scripts
 SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yml')
 EXAMPLE_DATA = 'example/example_data.csv'
 EXAMPLE_SCRIPT = 'example/example_as.js'
+OUTPUT_CSV = 'example/summary_output.csv'
+OUTPUT_CSV2 = 'example/summary_output_gspread.csv'
 
 
 def main(cfg):
@@ -128,7 +130,7 @@ def main(cfg):
         ])
     output_matrix.extend([
         (num_states+3, 2, 'Total'),
-        (num_states+3, 3, '=SUM(C3:C'+str(num_states+2))
+        (num_states+3, 3, '=SUM(C3:C'+str(num_states+2)+')')
     ])  # There's one other summary, but we'll demonstrate that in the Apps Script
 
     googleapi.send_bulk_data(ws, output_matrix, cfg)
@@ -139,6 +141,30 @@ def main(cfg):
         creds.serv('script', cfg), cfg)
 
     # Finally, let's read the data from the tables and save it locally
+    # One approach is to use the Apps Script function included in the setup:
+    cfg['logger'].info('Saving summary tab to csv using two different methods',
+                       filename1=OUTPUT_CSV, filename2=OUTPUT_CSV2)
+    raw_data = googleapi.call_apps_script(
+        {"function": "readDataTable",
+         "parameters": [new_doc.id, 'State_summary']
+         },
+        creds.serv('script', cfg), cfg)
+    processed_data = [x[1:4] for x in raw_data[1:]]  # Filter out the non-data cells
+    save_lol_as_csv(OUTPUT_CSV, processed_data)
+
+    # A second approach is to use the built-in function in gspread:
+    raw_data = ws.get_all_values()
+    processed_data = [x[1:4] for x in raw_data[1:]]  # Exactly the same as above
+    save_lol_as_csv(OUTPUT_CSV2, processed_data)
+
+
+def save_lol_as_csv(fn, lol):
+    """Utility function to save a list of lists as a csv"""
+    with open(fn, 'wt', encoding='utf-8') as f:
+        writer = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL,
+                            lineterminator='\n')
+        for row in lol:
+            writer.writerow(row)
 
 
 if __name__ == '__main__':
