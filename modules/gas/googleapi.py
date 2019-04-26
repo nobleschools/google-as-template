@@ -3,12 +3,14 @@
 """Functions for working with the Google API"""
 import os
 import json
-import httplib2
-from apiclient import discovery
-from apiclient import errors
-from oauth2client import tools
-from oauth2client import client
-from oauth2client.file import Storage
+import pickle
+import gspread
+from datetime import datetime
+from googleapiclient import errors
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.auth.transport.requests import AuthorizedSession
 from modules.gas import filework
 
 
@@ -30,8 +32,8 @@ def get_credentials(cfg):
     """
     Gets valid user credentials from storage.
 
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
+    If nothing has been stored or if the stored credentials are invalid,
+    will run an authorization flow (command line) to obtain new credentials.
 
     Assumes store_file is/will be and secret_file is in store_dir
     These and other constants passed via cfg dict from a startup yaml file
@@ -40,20 +42,24 @@ def get_credentials(cfg):
         credentials, the obtained credential.
     """
     credential_path = os.path.join(cfg['store_dir'], cfg['credentials_store'])
-    store = Storage(credential_path)
-    credentials = store.get()
-    # Weird error where a token grab gets timed out sometimes:
-    credentials = store.get()
+    credentials = None
+    if os.path.exists(credential_path):
+        with open(credential_path, 'rb') as token:
+            credentials = pickle.load(token)
+
     cfg['logger'].debug('Getting credentials', sub='get_credentials')
 
-    if not credentials or credentials.invalid:
-        secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
-        flow = client.flow_from_clientsecrets(secret_path, cfg['scopes'])
-        flow.user_agent = cfg['project_name']
+    if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+        else:
+            secret_path = os.path.join(cfg['store_dir'], cfg['credentials_file'])
+            flow = InstalledAppFlow.from_client_secrets_file(
+                secret_path, cfg['scopes'])
+            credentials = flow.run_local_server()
+        with open(credential_path, 'wb') as token:
+            pickle.dump(credentials, token)
 
-        # This line keeps run_flow from trying to parse the command line
-        flags = tools.argparser.parse_args([])
-        credentials = tools.run_flow(flow, store, flags)
     return credentials
 
 
@@ -62,7 +68,7 @@ def get_service(service_type, version, creds, cfg):
     cfg['logger'].debug('Getting service', sub='get_service', service_type=service_type,
                         version=version)
     try:
-        return discovery.build(service_type, version, credentials=creds)
+        return build(service_type, version, credentials=creds)
     except AttributeError as e:
         cfg['logger'].warning('Credentials attribute error',
                               sub='get_credentials',
@@ -111,9 +117,24 @@ class Creds(object):
 
     def cred(self):
         """Returns the class variable, refreshing if close to expiring"""
-        if self._creds._expires_in() < self._refresh_ttl:
-            self._creds = self._creds.refresh(httplib2.Http())
+        if self._creds.expiry:
+            expires_in = (self._creds.expiry - datetime.utcnow()).total_seconds()
+            if expires_in < self._refresh_ttl:
+                self._creds = self._creds.refresh(Request())
         return self._creds
+
+    def gspread_client(self):
+        """
+        Returns a gspread client object.
+        Google has deprecated Oauth2, but the gspread library still uses the creds
+        from that system, so this function bypasses the regular approach and creates
+        and authorizes the client here instead.
+        Code copied from answer here: https://github.com/burnash/gspread/issues/472
+        """
+        regular_cred = self.cred()
+        gc = gspread.Client(auth=regular_cred)
+        gc.session = AuthorizedSession(regular_cred)
+        return gc
 
     def serv(self, service_type, cfg):
         return get_service(service_type,

@@ -14,11 +14,11 @@ google_settings:  # First three lines are based on your project
   local_settings: 'settings/local_settings.yml'
   store_dir: '.credentials'
   credentials_file: 'credentials.json'
-  credentials_store: 'credentials_store.json'
+  credentials_store: 'token.pickle'
   scopes:  # If these are changed, repeat flow by deleting credentials_store.json
     - 'https://www.googleapis.com/auth/drive'
     - 'https://www.googleapis.com/auth/script.projects'
-    - 'https://spreadsheets.google.com/feeds'
+    #- 'https://spreadsheets.google.com/feeds'
     - 'https://www.googleapis.com/auth/spreadsheets'
   service_versions:
     script: 'v1'

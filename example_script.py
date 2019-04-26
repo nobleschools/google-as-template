@@ -9,10 +9,8 @@ being able to follow along.
 """
 import os
 import shutil
-import gspread
 import csv
 
-# from apiclient import errors
 from modules.gas.struct_logger import get_logger
 from modules.gas import googleapi
 from modules.gas import filework
@@ -40,37 +38,42 @@ def main(cfg):
 
     # The line above is only called once, but everytime we want to use credentials,
     # we access them through the cred() method as below.
+
     # gc stands for 'google client' and is the main class for working with the gspread
     # library. In the below, we'll use both. gspread is best for bigger actions
     # relating to Google Sheets (creating them, adding tabs, etc.) while Apps Scripts
     # are best for more detailed work, particularly when it comes to formatting.
-    gc = gspread.authorize(creds.cred())
+    gc = creds.gspread_client()
 
     # This line creates a brand new Google sheet in the user's home dir
+    # We won't be using 'gc' much below this, working instead with the spreadsheet
+    # object (new_doc)
     new_doc = gc.create('Example Sheet File')
 
     # These two lines move the file to the project dir and then change the permissions
     # so that anyone with the link can edit. Note that we're requesting a service
-    # separately in both lines. This is to ensure the credential isn't at risk of
+    # separately in both lines. Doing this instead of reusing a local variable causes
+    # the api to check each time to make sure that the access token isn't close to
     # timing out.
     googleapi.move_file(new_doc.id, cfg['project_dir'], creds.serv('drive', cfg), cfg)
     googleapi.add_link_permissions(new_doc.id, creds.serv('drive', cfg), cfg)
 
     # Now, we'll load the example file into the first tab of the sheet
-    # This first method is a quick way to do it via gspread. But has some limitations
+    # This first method is a quick way to do it via gspread, but has some limitations
     cfg['logger'].info('Writing example csv data to the first tab')
     example_data = open(EXAMPLE_DATA, 'r').read()
     gc.import_csv(new_doc.id, example_data)
     new_doc.sheet1.update_title('Raw_csv_sheet')
 
     # As a second method, we'll load the same data, but manipulate the csv data as a
-    # list of lists first
+    # list of lists first (and use a different method to load it)
     cfg['logger'].info('Writing same csv data to the second tab with lol function')
     with open(EXAMPLE_DATA, 'r') as f:
         reader = csv.reader(f)
         l_o_l_csv_data = [row for row in reader]
     ws = new_doc.add_worksheet('Written_csv_sheet',
                                len(l_o_l_csv_data), len(l_o_l_csv_data[0]))
+
     # The function below will write the data to a sheet using the update_cells method
     # in the gspread library. It's more efficient for sparse data.
     googleapi.write_lol_to_sheet(ws, l_o_l_csv_data, cfg)
@@ -84,6 +87,7 @@ def main(cfg):
         l_o_l_csv_data[i].insert(2, '=len(B'+str(i+1)+')')
     ws = new_doc.add_worksheet('AS_written_csv',
                                len(l_o_l_csv_data), len(l_o_l_csv_data[0]))
+
     # This calls a function that was part of the utilities.js file that was pushed
     # to the Apps Script project when you ran the setup
     googleapi.call_apps_script(
@@ -94,6 +98,8 @@ def main(cfg):
 
     # Now, we'd like to format this last tab. Formatting requires Apps Script, so we'll
     # Need to push an appscript file to the project and then run it.
+    # This push script (and the pull script) were intended primarily for syncing with
+    # git via the command line, but you can use them programmatically like below
     cfg['logger'].info('Copying example script to project dir and pushing to remote.')
     shutil.copy(EXAMPLE_SCRIPT, cfg['local_script_dir'])
     push_scripts(cfg)
