@@ -68,7 +68,7 @@ features:
    - If you'd like to use a remote logger, get the hostname and port for your
      service (e.g. Papertrail)
    - In settings.yml, under the log_settings key at the bottom:
-     - Change the remote_settings_na key to remote_settings
+     - Change the xremote_settings key to remote_settings
      - change the values below remote_settings to reflect your hostname and port
    - Change the local_level to an integer representing the desired logging intensity
      to console
