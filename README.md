@@ -18,23 +18,21 @@ features:
 ## Getting started
 
 0. Install the requirements for this repository: 'pip install -r requirements.txt'
+
 1. Go to the [Google Apps Script API Python Quickstart](https://developers.google.com/apps-script/api/quickstart/python)
    and follow "Step 1" to create a new console project, enable the API and
    receive credentials. Place the "credentials.json" file in a '.credentials'
    folder off the main directory. Also, note the new project name for later.
+
 2. Edit the settings/settings.yml file as follows (all in google_settings):
    1. Change the project_name setting to the one you created in Step 1.
    2. Change the project_dir setting to the key for your Google Drive folder
    3. Change the default script name in script_name
    4. Modify any of the remaining defaults if necessary (especially scopes)
+
 3. Run 'python google_as_manage.py create_project' to do an initial
    authentication and then push a starter script into your project folder.
    A few notes:
-   - If you get an error immediately, just run it again--there's an issue
-     with the credentials not "catching" right away that is resolved by
-     simply running again
-   - If the authentication doesn't work via your local browser, you might
-     need to specify a command line option.
    - Depending on what you've done before, you might need to enable the
      specific APIs in you Google account. If this occurs, the script will
      prompt with an error message indicating the URL to do so.
@@ -57,7 +55,7 @@ features:
    "Deployment" in the newly created project. In the project (in the Drive folder):
    - Go to Publish->Deploy as API executable...
    - Copy the "Current API ID" value and replace the '' in
-     settings/local_settings.yml next to 'API ID' with this value 
+     settings/local_settings.yml next to 'API_ID' with this value 
      then hit close. _(This file is created by step 3.)_
 
 6. Run 'python google_as_manage.py check_creation' to see if everything is
@@ -76,12 +74,18 @@ features:
      outputs of different levels to your remote logger
 
 8. _Optional_: Run the example project code to see what a sample use might look like
-   - In the main project directory, run the 'example_script.py'
-   - This will create a two tabbed spreadsheet in your Google Drive folder
-     - One tab is based on the example_data.csv source data in the 'example' folder
-     - The other tab is based on math from that folder
-     - Both are formatted based on the script file in the 'example' folder
-     - The end of the script downloads the contents of both tabs to local csv files
+   - In the main project directory, run 'python example_script.py'
+     - You might get an error message telling you to enable a new API (as in step 3.)
+       If this happens, enable the API and then run the script again.
+   - This will create a four tabbed spreadsheet in your Google Drive folder
+     - The first tab is based on the example_data.csv source data in the 'example' folder
+     - The second tab is the same as the first, but written with a different method
+     - The third tab is written with a third method __and__ adds some calculations
+       along with formatting using the Google Apps Script functions loaded to your
+       script project when you run this code
+     - The fourth tab summarizes the third and also includes Apps Script formatting.
+     - The script file used in the last two tabs is in the 'example' folder
+     - The end of the script downloads the contents of two tabs to local csv files
    - Be sure to read through the code in example_script.py, because there are very
      extensive comments that talk through the logic of the what and why for each step.
 ---
@@ -118,8 +122,8 @@ It is verbosely commented and is designed to help with getting up to speed on th
 
 - If you run one of these scripts and get an error like the following:
   - 'AttributeError: 'NoneType' object has no attribute 'access_token'
-- Just try again. There's currently a bug with stale credentials not picking up
-  immediately. It almost always goes away.
+- Just try again. Testing for this repository didn't see this error, but it
+  has occured in the past.
 
 ---
 

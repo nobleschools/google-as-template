@@ -7,7 +7,7 @@ import yaml
 
 def grab_yaml(fn):
     with open(fn, 'r') as ymlfile:
-        return yaml.load(ymlfile)
+        return yaml.safe_load(ymlfile)
 
 
 def store_yaml(fn, data_dict):

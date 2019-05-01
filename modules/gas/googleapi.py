@@ -88,20 +88,20 @@ class ScriptSettings(object):
         else:
             self.settings = {
                 'scriptId': scriptId,
-                'API ID': apiId,
+                'API_ID': apiId,
             }
 
     def __repr__(self):
         return 'scriptId: '+self.settings['scriptId']
 
     def set_api_id(self, id):
-        self.settings['API ID'] = id
+        self.settings['API_ID'] = id
 
     def get_script_id(self):
         return self.settings['scriptId']
 
     def get_api_id(self):
-        return self.settings['API ID']
+        return self.settings['API_ID']
 
     def store(self):
         filework.store_yaml(self.local_settings, self.settings)

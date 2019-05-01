@@ -46,7 +46,7 @@ def create_project(cfg):
         cfg['logger'].info('Then follow the steps in the README.')
 
     except errors.HttpError as error:
-        cfg['logger'].error(error.content)
+        cfg['logger'].error(str(error.content))
 
 
 def _inspect(obj):
@@ -82,13 +82,12 @@ def check_creation(cfg):
     """
     Simple target to run after creation to see if scripts can be run
     """
-    sid = googleapi.ScriptSettings(cfg).get_api_id()
     creds = googleapi.Creds(cfg)
     service = creds.serv('script', cfg)
     request = {"function": "getFilesDirWithType",
                "parameters": [cfg['project_dir']],
                }
-    out = googleapi.call_apps_script(request, service, sid, cfg)
+    out = googleapi.call_apps_script(request, service, cfg)
     cfg['logger'].info('There are {} files in the folder'.format(len(out)))
     for k, v in out.items():
         name, mimetype = v.split(sep=':')

@@ -4,7 +4,7 @@ Unit tests for the google-as-template base
 """
 import os
 import yaml
-SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yaml')
+SETTINGS = os.environ.setdefault('SETTINGSYAML', 'settings/settings.yml')
 
 
 class TestYaml(object):
@@ -27,4 +27,5 @@ class TestGoogleApps(object):
         pass
 
     def test_can_see_apps_script_file(self):
-        assert self.script == 'Apps Scripts'
+        assert (self.script ==
+                'Enter the name of your script file here (will be created)')
