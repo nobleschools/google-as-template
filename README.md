@@ -27,6 +27,7 @@ features:
 2. Edit the settings/settings.yml file as follows (all in google_settings):
    1. Change the project_name setting to the one you created in Step 1.
    2. Change the project_dir setting to the key for your Google Drive folder
+      (That's the long string of random letters after the 'folders/' part of the URL)
    3. Change the default script name in script_name
    4. Modify any of the remaining defaults if necessary (especially scopes)
 
